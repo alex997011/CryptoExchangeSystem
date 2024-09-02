@@ -35,6 +35,17 @@ public class UserView {
             }
         }
 
+        String mail;
+        while (true) {
+            System.out.println("Ingrese el email:");
+            mail = scanner.nextLine();
+            if (mail.isEmpty()) {
+                System.out.println("El email no puede estar vacío. Inténtelo de nuevo.");
+            } else {
+                break;
+            }
+        }
+
         String name;
         while (true) {
             System.out.println("Ingrese el nombre:");
@@ -58,7 +69,7 @@ public class UserView {
             }
         }
 
-        if (UserController.registerUser(id, username, password, name, lastname)) {
+        if (UserController.registerUser(id, username, password,mail, name, lastname)) {
             System.out.println("Usuario registrado con éxito.");
         } else {
             System.out.println("Error al registrar el usuario. Inténtelo de nuevo.");

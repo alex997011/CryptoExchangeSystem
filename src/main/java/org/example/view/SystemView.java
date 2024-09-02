@@ -13,4 +13,5 @@ public class SystemView {
         WalletController.StartWalletSystem();
         TradeController.StartTradeSystem();
     }
+
 }
