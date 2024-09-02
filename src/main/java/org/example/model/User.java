@@ -4,13 +4,16 @@ public class User {
     private int id;
     private String User;
     private String password;
+    private String mail;
     private String name;
+
     private String lastname;
 
-    public User(int id, String user, String password, String name, String lastname) {
+    public User(int id, String user, String password,String mail, String name, String lastname) {
         this.id = id;
         User = user;
         this.password = password;
+        this.mail=mail;
         this.name = name;
         this.lastname = lastname;
     }
@@ -55,12 +58,21 @@ public class User {
         this.lastname = lastname;
     }
 
+    public String getMail() {
+        return mail;
+    }
+
+    public void setMail(String mail) {
+        this.mail = mail;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", User='" + User + '\'' +
                 ", password='" + password + '\'' +
+                ", mail='" + mail + '\'' +
                 ", name='" + name + '\'' +
                 ", lastname='" + lastname + '\'' +
                 '}';
