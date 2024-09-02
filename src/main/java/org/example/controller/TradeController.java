@@ -463,8 +463,36 @@ public class TradeController {
             }
         }
     }
-    public static void historic(){
+    public static void historic(int userId) {
+        System.out.println("Historial de transacciones para el usuario con ID: " + userId);
 
+        // Filtrar y mostrar órdenes de compra realizadas por el usuario
+        System.out.println("\nÓrdenes de Compra Realizadas:");
+        for (OrderBuy buyOrder : buyOrders) {
+            if (buyOrder.getId_proprietary() == userId && buyOrder.getStage().equals("REALIZADO")) {
+                System.out.println("Compra - ID de Orden: " + buyOrder.getId());
+                System.out.println("Fecha: " + buyOrder.getDate());
+                System.out.println("Criptomoneda: " + buyOrder.getCrypto().getMarketCoin());
+                System.out.println("Cantidad: " + buyOrder.getAmount());
+                System.out.println("Precio por unidad: " + buyOrder.getPrice());
+                System.out.println("Total: " + (buyOrder.getPrice() * buyOrder.getAmount()));
+                System.out.println("-------------------------------------");
+            }
+        }
+
+        // Filtrar y mostrar órdenes de venta realizadas por el usuario
+        System.out.println("\nÓrdenes de Venta Realizadas:");
+        for (OrderSale saleOrder : saleOrders) {
+            if (saleOrder.getId_proprietary() == userId && saleOrder.getStage().equals("REALIZADO")) {
+                System.out.println("Venta - ID de Orden: " + saleOrder.getId());
+                System.out.println("Fecha: " + saleOrder.getDate());
+                System.out.println("Criptomoneda: " + saleOrder.getCrypto().getMarketCoin());
+                System.out.println("Cantidad: " + saleOrder.getAmount());
+                System.out.println("Precio por unidad: " + saleOrder.getPrice());
+                System.out.println("Total: " + (saleOrder.getPrice() * saleOrder.getAmount()));
+                System.out.println("-------------------------------------");
+            }
+        }
     }
     private static int generateOrderId() {
         // Implement logic to generate a unique order ID
