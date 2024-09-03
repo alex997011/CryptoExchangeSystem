@@ -6,8 +6,6 @@ import org.example.view.SystemView;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.io.BufferedWriter;
-import java.util.Scanner;
 import java.util.Random;
 
 public class UserController {
@@ -22,14 +20,13 @@ public class UserController {
             String line;
             while ((line = reader.readLine()) != null) {
                 User user = parseUser(line);
-                System.out.println(user.toString());
                 if (user != null) {
                     users.add(user);
                 }
             }
-            System.out.println("Usuarios cargados desde el archivo con éxito.");
+            System.out.println("Users loaded from file successfully.");
         } catch (IOException e) {
-            System.out.println("Error al leer el archivo: " + e.getMessage());
+            System.out.println("Error reading file: " + e.getMessage());
         }
     }
     public static Integer generate_id(){
@@ -47,7 +44,7 @@ public class UserController {
     public static boolean registerUser(int id, String username, String password,String mail, String name, String lastname) {
         for (User user : users) {
             if (user.getUser().equals(username)) {
-                System.out.println("El nombre de usuario ya está en uso. Intente con otro.");
+                System.out.println("The username is already in use. Try another one.");
                 return false;
             }
         }
@@ -58,7 +55,7 @@ public class UserController {
         WalletController.addWallet(newWallet);
         WalletController.writeWallet(newWallet);
 
-        System.out.println("Usuario y billetera creados con éxito.");
+        System.out.println("User and wallet created successfully.");
         SystemView.reloadSystem();
         return true;
     }
@@ -81,9 +78,9 @@ public class UserController {
             writer.write(line);
             writer.newLine();
 
-            System.out.println("Usuarios guardados en el archivo con éxito.");
+            System.out.println("Users saved to file successfully.");
         } catch (IOException e) {
-            System.out.println("Error al escribir en el archivo: " + e.getMessage());
+            System.out.println("Error writing to file: " + e.getMessage());
         }
     }
     private static User parseUser(String line) {
@@ -98,10 +95,10 @@ public class UserController {
                 String lastname = parts[5].trim();
                 return new User(id, username, password,mail, name, lastname);
             } catch (NumberFormatException e) {
-                System.out.println("Error al parsear el ID de usuario: " + e.getMessage());
+                System.out.println("Error parsing user ID: " + e.getMessage());
             }
         } else {
-            System.out.println("Línea de usuario inválida: " + line);
+            System.out.println("Invalid user line:" + line);
         }
         return null;
 
@@ -111,5 +108,13 @@ public class UserController {
     }
     public static void logoutUser() {
         currentUser = null;
+    }
+
+    public static ArrayList<User> getUsers() {
+        return users;
+    }
+
+    public static void setUsers(ArrayList<User> users) {
+        UserController.users = users;
     }
 }

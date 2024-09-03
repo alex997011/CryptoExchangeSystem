@@ -28,9 +28,9 @@ public class TradeController {
                     cryptocurrencies.add(cryptocurrency);
                 }
             }
-            System.out.println("Las tendencias del mercado se cargaron con éxito.");
+            System.out.println("Market trends loaded successfully.");
         } catch (IOException e) {
-            System.out.println("Error al leer el archivo: " + e.getMessage());
+            System.out.println("Error reading the file:" + e.getMessage());
         }
 
         // Load buy orders
@@ -42,9 +42,9 @@ public class TradeController {
                     buyOrders.add(orderBuy);
                 }
             }
-            System.out.println("Órdenes de compra cargadas con éxito.");
+            System.out.println("Buy orders loaded successfully.");
         } catch (IOException e) {
-            System.out.println("Error al leer el archivo: " + e.getMessage());
+            System.out.println("Error reading the file: " + e.getMessage());
         }
 
         // Load sale orders
@@ -56,25 +56,9 @@ public class TradeController {
                     saleOrders.add(orderSale);
                 }
             }
-            System.out.println("Órdenes de venta cargadas con éxito.");
+            System.out.println("Sale orders loaded successfully.");
         } catch (IOException e) {
-            System.out.println("Error al leer el archivo: " + e.getMessage());
-        }
-
-        // Print loaded data
-        System.out.println("Precios de criptomonedas cargados:");
-        for (Cryptocurrency crypto : cryptocurrencies) {
-            System.out.println(crypto);
-        }
-
-        System.out.println("Órdenes de compra cargadas:");
-        for (OrderBuy order : buyOrders) {
-            System.out.println(order);
-        }
-
-        System.out.println("Órdenes de venta cargadas:");
-        for (OrderSale order : saleOrders) {
-            System.out.println(order);
+            System.out.println("Error reading the file:" + e.getMessage());
         }
     }
 
@@ -84,12 +68,12 @@ public class TradeController {
         Wallet userWallet = findWalletByUserId(userId);
 
         if (userWallet == null) {
-            System.out.println("No se encontró la Wallet para el usuario con ID: " + userId);
+            System.out.println("Wallet not found for user with ID: " + userId);
             return;
         }
 
-        // Mostrar criptomonedas disponibles y sus precios actuales
-        System.out.println("Seleccione la criptomoneda que desea comprar:");
+
+        System.out.println("Select the cryptocurrency you want to buy:");
         for (int i = 0; i < cryptocurrencies.size(); i++) {
             System.out.println(i + ". " + cryptocurrencies.get(i));
         }
@@ -97,56 +81,57 @@ public class TradeController {
         int cryptoIndex = scanner.nextInt();
         Cryptocurrency selectedCrypto = cryptocurrencies.get(cryptoIndex);
 
-        System.out.println("Ingrese la cantidad que desea comprar:");
+        System.out.println("Enter the amount you want to buy:");
         int amount = scanner.nextInt();
 
-        // Validar el precio de compra
+
         float purchasePrice;
         while (true) {
-            System.out.println("Ingrese el precio al que desea comprar por unidad:");
+            System.out.println("Enter the price at which you want to buy per unit:");
             purchasePrice = scanner.nextFloat();
 
             double marketPrice = selectedCrypto.getValue();
             double priceDifference = Math.abs(marketPrice - purchasePrice);
 
             if (purchasePrice > marketPrice && priceDifference > 300) {
-                System.out.println("El precio de compra ingresado es demasiado alto en comparación con el precio de mercado.");
-                System.out.println("La diferencia es de " + priceDifference + " USD. Ingrese un precio más cercano al precio de mercado.");
+                System.out.println("The entered purchase price is too high compared to the market price.");
+                System.out.println("The difference is  " + priceDifference + " USD. Enter a price closer to the market price.");
             } else {
-                break; // El precio es aceptable
+                break;
             }
         }
 
         if (userWallet.getFiatBalance() >= (purchasePrice * amount)) {
-            // Crear una nueva orden de compra
-            OrderBuy newBuyOrder = new OrderBuy(generateOrderId(), userId, new Date(), selectedCrypto, amount, purchasePrice, "NOREALIZADO");
 
-            // Guardar la orden de compra antes de modificarla
+            OrderBuy newBuyOrder = new OrderBuy(generateOrderId(), userId, new Date(), selectedCrypto, amount, purchasePrice, "NOTEXECUTED");
+
+
             buyOrders.add(newBuyOrder);
             saveBuyOrdersToFile();
 
             boolean orderExecuted = false;
             for (OrderSale saleOrder : saleOrders) {
 
-                // Verificación para asegurarse de que el usuario no está comprando su propia orden de venta
+
                 if (saleOrder.getId_proprietary() == userId) {
-                    System.out.println("No puedes comprar a tu propia orden de venta.");
+                    System.out.println("");
                     continue;
                 }
 
                 if (saleOrder.getCrypto().getMarketCoin().equals(selectedCrypto.getMarketCoin())
                         && saleOrder.getAmount() == amount
-                        && saleOrder.getStage().equals("NOREALIZADO")
-                        && saleOrder.getPrice() <= purchasePrice) {
+                        && saleOrder.getStage().equals("NOTEXECUTED")
+                        && saleOrder.getPrice() <= purchasePrice
+                        && (purchasePrice - saleOrder.getPrice()) <= 500) {
 
-                    System.out.println("Orden de compra ejecutada al precio de: " + purchasePrice);
+                    System.out.println("Purchase order executed at the sale price of: " + saleOrder.getPrice());
 
-                    userWallet.setFiatBalance(userWallet.getFiatBalance() - (purchasePrice * amount));
+                    userWallet.setFiatBalance(userWallet.getFiatBalance() - (saleOrder.getPrice() * amount));
                     addCryptocurrencyToWallet(userWallet, selectedCrypto, amount);
 
-                    // Actualizar el estado de la orden
-                    newBuyOrder.setStage("REALIZADO");
-                    saleOrder.setStage("REALIZADO");
+
+                    newBuyOrder.setStage("EXECUTED");
+                    saleOrder.setStage("EXECUTED");
 
                     orderExecuted = true;
                     break;
@@ -154,18 +139,17 @@ public class TradeController {
             }
 
             if (!orderExecuted) {
-                System.out.println("Orden de compra agregada al libro de órdenes.");
+                System.out.println("Purchase order added to the order book.");
             }
 
-            // Guardar las órdenes actualizadas
+
             saveBuyOrdersToFile();
-            saveSaleOrdersToFile(); // Guardar la actualización en las órdenes de venta
+            saveSaleOrdersToFile();
             saveWalletToFile(userWallet);
         } else {
-            System.out.println("No tiene suficiente saldo en fiat para realizar la compra.");
+            System.out.println("You don't have enough fiat balance to make the purchase.");
         }
     }
-
 
 
     public static void salesOrder(int userId) {
@@ -174,12 +158,12 @@ public class TradeController {
         Wallet userWallet = findWalletByUserId(userId);
 
         if (userWallet == null) {
-            System.out.println("No se encontró la Wallet para el usuario con ID: " + userId);
+            System.out.println("Wallet not found for user with ID: " + userId);
             return;
         }
 
-        // Mostrar criptomonedas disponibles y sus precios actuales
-        System.out.println("Seleccione la criptomoneda que desea vender:");
+
+        System.out.println("Select the cryptocurrency you want to sell:");
         for (int i = 0; i < cryptocurrencies.size(); i++) {
             System.out.println(i + ". " + cryptocurrencies.get(i));
         }
@@ -187,56 +171,57 @@ public class TradeController {
         int cryptoIndex = scanner.nextInt();
         Cryptocurrency selectedCrypto = cryptocurrencies.get(cryptoIndex);
 
-        System.out.println("Ingrese la cantidad que desea vender:");
+        System.out.println("Enter the amount you want to sell:");
         int amount = scanner.nextInt();
 
         // Validar el precio de venta
         float sellPrice;
         while (true) {
-            System.out.println("Ingrese el precio al que desea vender por unidad:");
+            System.out.println("Enter the price at which you want to sell per unit:");
             sellPrice = scanner.nextFloat();
 
             double marketPrice = selectedCrypto.getValue();
             double priceDifference = Math.abs(marketPrice - sellPrice);
 
             if (sellPrice < marketPrice && priceDifference > 300) {
-                System.out.println("El precio de venta ingresado es demasiado bajo en comparación con el precio de mercado.");
-                System.out.println("La diferencia es de " + priceDifference + " USD. Ingrese un precio más cercano al precio de mercado.");
+                System.out.println("The entered sale price is too low compared to the market price.");
+                System.out.println("The difference is " + priceDifference + " USD. Enter a price closer to the market price.");
             } else {
-                break; // El precio es aceptable
+                break;
             }
         }
 
         if (hasEnoughCryptocurrency(userWallet, selectedCrypto, amount)) {
-            // Crear una nueva orden de venta
+
             OrderSale newSaleOrder = new OrderSale(generateOrderId(), userId, new Date(), selectedCrypto, amount, sellPrice, "NOREALIZADO");
 
-            // Guardar la orden de venta antes de modificarla
+
             saleOrders.add(newSaleOrder);
             saveSaleOrdersToFile();
 
             boolean orderExecuted = false;
             for (OrderBuy buyOrder : buyOrders) {
 
-                // Verificación para asegurarse de que el usuario no está vendiendo a su propia orden de compra
+
                 if (buyOrder.getId_proprietary() == userId) {
-                    System.out.println("No puedes vender a tu propia orden de compra.");
+                    System.out.println("");
                     continue;
                 }
 
                 if (buyOrder.getCrypto().getMarketCoin().equals(selectedCrypto.getMarketCoin())
                         && buyOrder.getAmount() == amount
-                        && buyOrder.getStage().equals("NOREALIZADO")
-                        && buyOrder.getPrice() >= sellPrice) {
+                        && buyOrder.getStage().equals("NOTEXECUTED")
+                        && buyOrder.getPrice() >= sellPrice
+                        && (buyOrder.getPrice() - sellPrice) <= 500) {
 
-                    System.out.println("Orden de venta ejecutada al precio de: " + sellPrice);
+                    System.out.println("Sale order executed at the sale price of: " + sellPrice);
 
                     userWallet.setFiatBalance(userWallet.getFiatBalance() + (sellPrice * amount));
                     removeCryptocurrencyFromWallet(userWallet, selectedCrypto, amount);
 
-                    // Actualizar el estado de la orden
-                    newSaleOrder.setStage("REALIZADO");
-                    buyOrder.setStage("REALIZADO");
+
+                    newSaleOrder.setStage("EXECUTED");
+                    buyOrder.setStage("EXECUTED");
 
                     orderExecuted = true;
                     break;
@@ -244,17 +229,18 @@ public class TradeController {
             }
 
             if (!orderExecuted) {
-                System.out.println("Orden de venta agregada al libro de órdenes.");
+                System.out.println("Sale order added to the order book.");
             }
 
-            // Guardar las órdenes actualizadas
+
             saveSaleOrdersToFile();
-            saveBuyOrdersToFile(); // Guardar la actualización en las órdenes de compra
+            saveBuyOrdersToFile();
             saveWalletToFile(userWallet);
         } else {
-            System.out.println("No tiene suficiente cantidad de criptomonedas para vender.");
+            System.out.println("You don't have enough cryptocurrency to sell.");
         }
     }
+
 
 
     private static Cryptocurrency parseCryptocurrency(String line) {
@@ -264,7 +250,7 @@ public class TradeController {
             float value = Float.parseFloat(parts[1].trim());
             return new Cryptocurrency(marketCoin, value);
         } catch (Exception e) {
-            System.out.println("Error al parsear criptomoneda: " + e.getMessage());
+            System.out.println("Error parsing cryptocurrency: " + e.getMessage());
             return null;
         }
     }
@@ -282,7 +268,7 @@ public class TradeController {
             String stage = parts[6].trim();
             return new OrderBuy(id, userId, date, crypto, amount, price, stage);
         } catch (ParseException | NumberFormatException e) {
-            System.out.println("Error al parsear orden de compra: " + e.getMessage());
+            System.out.println("Error parsing a: " + e.getMessage());
             return null;
         }
     }
@@ -300,7 +286,7 @@ public class TradeController {
             String stage = parts[6].trim();
             return new OrderSale(id, userId, date, crypto, amount, price, stage);
         } catch (ParseException | NumberFormatException e) {
-            System.out.println("Error al parsear orden de venta: " + e.getMessage());
+            System.out.println("Error parsing a: " + e.getMessage());
             return null;
         }
     }
@@ -352,7 +338,7 @@ public class TradeController {
                 writer.newLine();
             }
         } catch (IOException e) {
-            System.out.println("Error al guardar la billetera: " + e.getMessage());
+            System.out.println("Error saving the wallet: " + e.getMessage());
         }
     }
     private static String formatWallet(Wallet wallet) {
@@ -389,7 +375,7 @@ public class TradeController {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error al leer el archivo de billeteras: " + e.getMessage());
+            System.out.println("Error reading the wallet file: " + e.getMessage());
         }
         return wallets;
     }
@@ -414,7 +400,7 @@ public class TradeController {
 
             return new Wallet(userId, fiatBalance,cryptocurrencies);
         } catch (Exception e) {
-            System.out.println("Error al parsear la billetera: " + e.getMessage());
+            System.out.println("Error parsing a number: " + e.getMessage());
             return null;
         }
     }
@@ -458,37 +444,37 @@ public class TradeController {
                     }
                     return;
                 } else {
-                    System.out.println("No tiene suficiente criptomoneda para vender.");
+                    System.out.println("You don't have enough cryptocurrency to sell.");
                 }
             }
         }
     }
     public static void historic(int userId) {
-        System.out.println("Historial de transacciones para el usuario con ID: " + userId);
+        System.out.println("Transaction history for user with ID: " + userId);
 
-        // Filtrar y mostrar órdenes de compra realizadas por el usuario
-        System.out.println("\nÓrdenes de Compra Realizadas:");
+
+        System.out.println("\nPurchase Orders Placed:");
         for (OrderBuy buyOrder : buyOrders) {
-            if (buyOrder.getId_proprietary() == userId && buyOrder.getStage().equals("REALIZADO")) {
-                System.out.println("Compra - ID de Orden: " + buyOrder.getId());
-                System.out.println("Fecha: " + buyOrder.getDate());
-                System.out.println("Criptomoneda: " + buyOrder.getCrypto().getMarketCoin());
-                System.out.println("Cantidad: " + buyOrder.getAmount());
-                System.out.println("Precio por unidad: " + buyOrder.getPrice());
+            if (buyOrder.getId_proprietary() == userId && buyOrder.getStage().equals("EXECUTED")) {
+                System.out.println("Purchase - Order ID: " + buyOrder.getId());
+                System.out.println("Date:" + buyOrder.getDate());
+                System.out.println("Cryptocurrency: " + buyOrder.getCrypto().getMarketCoin());
+                System.out.println("Amount: " + buyOrder.getAmount());
+                System.out.println("Price per unit: " + buyOrder.getPrice());
                 System.out.println("Total: " + (buyOrder.getPrice() * buyOrder.getAmount()));
                 System.out.println("-------------------------------------");
             }
         }
 
-        // Filtrar y mostrar órdenes de venta realizadas por el usuario
+
         System.out.println("\nÓrdenes de Venta Realizadas:");
         for (OrderSale saleOrder : saleOrders) {
-            if (saleOrder.getId_proprietary() == userId && saleOrder.getStage().equals("REALIZADO")) {
-                System.out.println("Venta - ID de Orden: " + saleOrder.getId());
-                System.out.println("Fecha: " + saleOrder.getDate());
-                System.out.println("Criptomoneda: " + saleOrder.getCrypto().getMarketCoin());
-                System.out.println("Cantidad: " + saleOrder.getAmount());
-                System.out.println("Precio por unidad: " + saleOrder.getPrice());
+            if (saleOrder.getId_proprietary() == userId && saleOrder.getStage().equals("EXECUTED")) {
+                System.out.println("Sale - Order ID: " + saleOrder.getId());
+                System.out.println("Date: " + saleOrder.getDate());
+                System.out.println("Cryptocurrency: " + saleOrder.getCrypto().getMarketCoin());
+                System.out.println("Amount: " + saleOrder.getAmount());
+                System.out.println("Price per unit: " + saleOrder.getPrice());
                 System.out.println("Total: " + (saleOrder.getPrice() * saleOrder.getAmount()));
                 System.out.println("-------------------------------------");
             }
@@ -513,5 +499,13 @@ public class TradeController {
 
     public static void setSaleOrders(ArrayList<OrderSale> saleOrders) {
         TradeController.saleOrders = saleOrders;
+    }
+
+    public static ArrayList<Cryptocurrency> getCryptocurrencies() {
+        return cryptocurrencies;
+    }
+
+    public static void setCryptocurrencies(ArrayList<Cryptocurrency> cryptocurrencies) {
+        TradeController.cryptocurrencies = cryptocurrencies;
     }
 }

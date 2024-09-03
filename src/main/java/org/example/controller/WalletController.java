@@ -23,9 +23,9 @@ public class WalletController {
                     wallets.add(wallet);
                 }
             }
-            System.out.println("wallet cargada con éxito.");
+            System.out.println("wallet loaded successfully.");
         } catch (IOException e) {
-            System.out.println("Error al leer el archivo: " + e.getMessage());
+            System.out.println("Error reading file: " + e.getMessage());
         }
     }
     public static void Deposit() {
@@ -37,7 +37,7 @@ public class WalletController {
 
             if (userWallet != null) {
                 Scanner scanner = new Scanner(System.in);
-                System.out.println("Ingrese el monto a depositar:");
+                System.out.println("Enter the amount to deposit:");
                 double amount = scanner.nextDouble();
 
                 if (amount > 0) {
@@ -45,17 +45,17 @@ public class WalletController {
                     double newBalance = userWallet.getFiatBalance() + amount;
                     userWallet.setFiatBalance(newBalance);
 
-                    System.out.println("Depósito exitoso. Nuevo saldo: " + String.format("%.2f", newBalance) + " USD");
+                    System.out.println("Successful deposit. New balance:" + String.format("%.2f", newBalance) + " USD");
 
                     updateWalletFile();
                 } else {
-                    System.out.println("El monto a depositar debe ser positivo.");
+                    System.out.println("The amount to be deposited must be positive.");
                 }
             } else {
-                System.out.println("No se encontró una billetera asociada con este usuario.");
+                System.out.println("No wallet associated with this user was found.");
             }
         } else {
-            System.out.println("No hay un usuario autenticado. Por favor, inicie sesión.");
+            System.out.println("There is no authenticated user. Please login.");
         }
     }
     private static void updateWalletFile() {
@@ -87,9 +87,9 @@ public class WalletController {
                 writer.newLine();
             }
 
-            System.out.println("Archivo de billeteras actualizado con éxito.");
+            System.out.println("Wallets file updated successfully.");
         } catch (IOException e) {
-            System.out.println("Error al actualizar el archivo de billeteras: " + e.getMessage());
+            System.out.println("Error updating wallets file:" + e.getMessage());
         }
     }
     public static void funds(){
@@ -100,13 +100,13 @@ public class WalletController {
             Wallet userWallet = findWalletByUserId(currentUser.getId());
 
             if (userWallet != null) {
-                System.out.println("=== Información de Fondos ===");
-                System.out.println("Saldo disponible: " + userWallet.getFiatBalance() + " USD");
+                System.out.println("=== Fund Information ===");
+                System.out.println("Available balance:" + userWallet.getFiatBalance() + " USD");
             } else {
-                System.out.println("No se encontró una billetera asociada con este usuario.");
+                System.out.println("No wallet associated with this user was found.");
             }
         } else {
-            System.out.println("No hay un usuario autenticado. Por favor, inicie sesión.");
+            System.out.println("There is no authenticated user. Please login.");
         }
     }
     private static Wallet findWalletByUserId(int userId) {
@@ -124,23 +124,23 @@ public class WalletController {
             Wallet userWallet = findWalletByUserId(currentUser.getId());
 
             if (userWallet != null) {
-                System.out.println("=== Información de Criptomonedas en la Cuenta ===");
+                System.out.println("===Cryptocurrency Information in the Account===");
 
                 ArrayList<Cryptocurrency> listCrypto = userWallet.getListCrypto();
 
                 if (!listCrypto.isEmpty()) {
                     for (Cryptocurrency crypto : listCrypto) {
-                        System.out.println("Criptomoneda: " + crypto.getMarketCoin().getFullName() +
-                                " (" + crypto.getMarketCoin() + "), Cantidad: " + crypto.getValue());
+                        System.out.println("Cryptocurrency: " + crypto.getMarketCoin().getFullName() +
+                                " (" + crypto.getMarketCoin() + "), Amount: " + crypto.getValue());
                     }
                 } else {
-                    System.out.println("No hay criptomonedas en la cuenta.");
+                    System.out.println("There are no cryptocurrencies in the account.");
                 }
             } else {
-                System.out.println("No se encontró una billetera asociada con este usuario.");
+                System.out.println("No wallet associated with this user was found.");
             }
         } else {
-            System.out.println("No hay un usuario autenticado. Por favor, inicie sesión.");
+            System.out.println("There is no authenticated user. Please login.");
         }
     }
     private static Wallet parseWallet(String line){
@@ -152,10 +152,10 @@ public class WalletController {
                 ArrayList<Cryptocurrency> listCrypto = parseCryptocurrencies(parts[2]);
                 return new Wallet(id,fiatbalance, listCrypto);
             } catch (NumberFormatException e) {
-                System.out.println("Error al parsear el ID de usuario: " + e.getMessage());
+                System.out.println("Error parsing user ID:" + e.getMessage());
             }
         } else {
-            System.out.println("Línea de usuario inválida: " + line);
+            System.out.println("Invalid user line:" + line);
         }
         return null;
     }
@@ -172,7 +172,7 @@ public class WalletController {
                     double value = Double.parseDouble(cryptoDetails[1].trim());
                     listCrypto.add(new Cryptocurrency(marketCoin, value));
                 } catch (IllegalArgumentException e) {
-                    System.out.println("Error al parsear la criptomoneda: " + e.getMessage());
+                    System.out.println("Error parsing cryptocurrency: " + e.getMessage());
                 }
             }
         }
@@ -189,10 +189,10 @@ public class WalletController {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, true))) {
             String line = wallet.getId() + "," + wallet.getFiatBalance() + ",()";
             writer.write(line);
-            writer.newLine();  // Asegurarse de que cada billetera se escriba en una línea nueva
-            System.out.println("Billetera guardada en el archivo con éxito.");
+            writer.newLine();
+            System.out.println("Wallet saved to file successfully.");
         } catch (IOException e) {
-            System.out.println("Error al escribir en el archivo de billeteras: " + e.getMessage());
+            System.out.println("Error writing to wallets file: " + e.getMessage());
         }
     }
 
