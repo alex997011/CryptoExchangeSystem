@@ -19,7 +19,6 @@ public class WalletView {
             System.out.println("""
                     1. Go back\s
                     2. Log out\s
-                    3. Exit the program\s
                     Select an option:"""
             );
             String option = scanner.nextLine();
@@ -28,10 +27,6 @@ public class WalletView {
                 case "2" -> {
                     UserView.menuUser();
                     SystemView.reloadSystem();
-                }
-                case "3" -> {
-                    System.out.println("Exiting the system...");
-                    start = false;
                 }
                 default -> System.out.println("Invalid option. Please try again.");
             }
@@ -48,7 +43,6 @@ public class WalletView {
             System.out.println("""
                     1. Go back\s
                     2. Log out\s
-                    3. Exit the program\s
                     Select an option:"""
             );
             String option = scanner.nextLine();
@@ -58,10 +52,7 @@ public class WalletView {
                     UserView.menuUser();
                     SystemView.reloadSystem();
                 }
-                case "3" -> {
-                    System.out.println("Exiting the system...");
-                    start = false;
-                }
+
                 default -> System.out.println("Invalid option. Please try again.");
             }
             System.out.println();
@@ -77,7 +68,6 @@ public class WalletView {
             System.out.println("""
                     1. Go back\s
                     2. Log out\s
-                    3. Exit the program\s
                     Select an option:"""
             );
             String option = scanner.nextLine();
@@ -86,10 +76,6 @@ public class WalletView {
                 case "2" -> {
                     UserView.menuUser();
                     SystemView.reloadSystem();
-                }
-                case "3" -> {
-                    System.out.println("Exiting the system...");
-                    start = false;
                 }
                 default -> System.out.println("Invalid option. Please try again.");
             }
