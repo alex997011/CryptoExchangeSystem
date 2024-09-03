@@ -13,6 +13,7 @@ public class SystemView {
         UserController.StartUserSystem();
         WalletController.StartWalletSystem();
         UserView.menuUser();
+
     }
     public static void reloadSystem(){
         ArrayList<User> listUsers = UserController.getUsers();

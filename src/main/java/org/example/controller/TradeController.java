@@ -344,7 +344,7 @@ public class TradeController {
     private static String formatWallet(Wallet wallet) {
         StringBuilder sb = new StringBuilder();
         sb.append(wallet.getId()).append(",")
-                .append(String.format("%.2f", wallet.getFiatBalance())).append(",");
+                .append(wallet.getFiatBalance()).append(",");
 
         List<Cryptocurrency> cryptoList = wallet.getListCrypto();
         if (cryptoList.isEmpty()) {
